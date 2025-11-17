@@ -9,17 +9,17 @@ CONFIG += lrelease embed_translations
 
 # Source files
 SOURCES += \
-    client.cpp \
-    commande.cpp \
+    clientmanager.cpp \
+    commandemanager.cpp \
     connection.cpp \
     main.cpp \
     mainwindow.cpp
 
 # Header files
 HEADERS += \
-    client.h \
     clientcombobox.h \
-    commande.h \
+    clientmanager.h \
+    commandemanager.h \
     connection.h \
     mainwindow.h
 

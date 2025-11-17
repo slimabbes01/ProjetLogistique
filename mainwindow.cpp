@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "connection.h"
+#include "clientmanager.h"
+#include"commandemanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -27,6 +29,7 @@
 #include <QPainter>
 #include <QPageSize>
 #include <QSplitter>
+
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -286,63 +289,56 @@ bool MainWindow::validateCommandeInputs() {
 // Clients CRUD
 // =========================
 void MainWindow::addClient() {
-    if (!validateClientInputs()) return;
+    if(!validateClientInputs()) return;
+    Client c;
+    c.nom = lineEditNom->text();
+    c.prenom = lineEditPrenom->text();
+    c.adresse = lineEditAdresse->text();
+    c.telephone = lineEditTelephone->text();
+    c.email = lineEditEmail->text();
 
-    QSqlQuery query(Connection::getInstance());
-    query.prepare("INSERT INTO CLIENT (NOM, PRENOM, ADRESSE, TELEPHONE, EMAIL) VALUES (?, ?, ?, ?, ?)");
-    query.addBindValue(lineEditNom->text());
-    query.addBindValue(lineEditPrenom->text());
-    query.addBindValue(lineEditAdresse->text());
-    query.addBindValue(lineEditTelephone->text());
-    query.addBindValue(lineEditEmail->text());
-
-    if (!query.exec()) {
-        QMessageBox::critical(this, "Error", query.lastError().text());
-        return;
+    if(ClientManager::addClient(c)) {
+        modelClients->select();
+        loadClientComboBox();
+    } else {
+        QMessageBox::critical(this,"Error","Impossible d'ajouter le client !");
     }
-    modelClients->select();
-    loadClientComboBox();
 }
 
 void MainWindow::updateClient() {
-    if (!validateClientInputs()) return;
+    if(!validateClientInputs()) return;
     QModelIndex idx = tableViewClients->currentIndex();
-    if (!idx.isValid()) return;
-    int id = modelClients->data(modelClients->index(idx.row(),0)).toInt();
+    if(!idx.isValid()) return;
 
-    QSqlQuery query(Connection::getInstance());
-    query.prepare("UPDATE CLIENT SET NOM=?, PRENOM=?, ADRESSE=?, TELEPHONE=?, EMAIL=? WHERE ID_CLIENT=?");
-    query.addBindValue(lineEditNom->text());
-    query.addBindValue(lineEditPrenom->text());
-    query.addBindValue(lineEditAdresse->text());
-    query.addBindValue(lineEditTelephone->text());
-    query.addBindValue(lineEditEmail->text());
-    query.addBindValue(id);
+    Client c;
+    c.id = modelClients->data(modelClients->index(idx.row(),0)).toInt();
+    c.nom = lineEditNom->text();
+    c.prenom = lineEditPrenom->text();
+    c.adresse = lineEditAdresse->text();
+    c.telephone = lineEditTelephone->text();
+    c.email = lineEditEmail->text();
 
-    if(!query.exec()) {
-        QMessageBox::critical(this,"Error", query.lastError().text());
-        return;
+    if(ClientManager::updateClient(c)) {
+        modelClients->select();
+        loadClientComboBox();
+    } else {
+        QMessageBox::critical(this,"Error","Impossible de mettre à jour le client !");
     }
-    modelClients->select();
-    loadClientComboBox();
 }
 
 void MainWindow::deleteClient() {
     QModelIndex idx = tableViewClients->currentIndex();
-    if (!idx.isValid()) return;
+    if(!idx.isValid()) return;
     int id = modelClients->data(modelClients->index(idx.row(),0)).toInt();
 
-    QSqlQuery query(Connection::getInstance());
-    query.prepare("DELETE FROM CLIENT WHERE ID_CLIENT=?");
-    query.addBindValue(id);
-
-    if(!query.exec()) {
-        QMessageBox::critical(this,"Error", query.lastError().text());
-        return;
+    if(ClientManager::deleteClient(id)) {
+        modelClients->select();
+        loadClientComboBox();
+    } else {
+        QMessageBox::critical(this,"Error","Impossible de supprimer le client !");
     }
-    modelClients->select();
-    loadClientComboBox();
 }
+
 
 void MainWindow::searchClient() {
     QString nom = lineEditNom->text();
@@ -366,42 +362,37 @@ void MainWindow::populateClientForm(const QModelIndex &current, const QModelInde
 void MainWindow::addCommande() {
     if(!validateCommandeInputs()) return;
 
-    int clientId = comboBoxClient->currentData().toInt();
-    QSqlQuery query(Connection::getInstance());
-    query.prepare("INSERT INTO COMMANDE (ID_CLIENT, DESCRIPTION, MONTANT, DATE_COMMANDE, STATUT) VALUES (?,?,?,?,?)");
-    query.addBindValue(clientId);
-    query.addBindValue(lineEditDescription->text());
-    query.addBindValue(lineEditMontant->text().toDouble());
-    query.addBindValue(dateEditCommande->date());
-    query.addBindValue(comboBoxStatut->currentText());
+    Commande c;
+    c.clientId = comboBoxClient->currentData().toInt();
+    c.description = lineEditDescription->text();
+    c.montant = lineEditMontant->text().toDouble();
+    c.dateCommande = dateEditCommande->date();
+    c.statut = comboBoxStatut->currentText();
 
-    if(!query.exec()) {
-        QMessageBox::critical(this,"Error", query.lastError().text());
-        return;
+    if(CommandeManager::addCommande(c)) {
+        modelCommandes->select();
+    } else {
+        QMessageBox::critical(this,"Error","Impossible d'ajouter la commande !");
     }
-    modelCommandes->select();
 }
 
 void MainWindow::updateCommande() {
     QModelIndex idx = tableViewCommandes->currentIndex();
     if(!idx.isValid()) return;
-    int id = modelCommandes->data(modelCommandes->index(idx.row(),0)).toInt();
-    int clientId = comboBoxClient->currentData().toInt();
 
-    QSqlQuery query(Connection::getInstance());
-    query.prepare("UPDATE COMMANDE SET ID_CLIENT=?, DESCRIPTION=?, MONTANT=?, DATE_COMMANDE=?, STATUT=? WHERE ID_COMMANDE=?");
-    query.addBindValue(clientId);
-    query.addBindValue(lineEditDescription->text());
-    query.addBindValue(lineEditMontant->text().toDouble());
-    query.addBindValue(dateEditCommande->date());
-    query.addBindValue(comboBoxStatut->currentText());
-    query.addBindValue(id);
+    Commande c;
+    c.id = modelCommandes->data(modelCommandes->index(idx.row(),0)).toInt();
+    c.clientId = comboBoxClient->currentData().toInt();
+    c.description = lineEditDescription->text();
+    c.montant = lineEditMontant->text().toDouble();
+    c.dateCommande = dateEditCommande->date();
+    c.statut = comboBoxStatut->currentText();
 
-    if(!query.exec()) {
-        QMessageBox::critical(this,"Error", query.lastError().text());
-        return;
+    if(CommandeManager::updateCommande(c)) {
+        modelCommandes->select();
+    } else {
+        QMessageBox::critical(this,"Error","Impossible de mettre à jour la commande !");
     }
-    modelCommandes->select();
 }
 
 void MainWindow::deleteCommande() {
@@ -409,15 +400,11 @@ void MainWindow::deleteCommande() {
     if(!idx.isValid()) return;
     int id = modelCommandes->data(modelCommandes->index(idx.row(),0)).toInt();
 
-    QSqlQuery query(Connection::getInstance());
-    query.prepare("DELETE FROM COMMANDE WHERE ID_COMMANDE=?");
-    query.addBindValue(id);
-
-    if(!query.exec()) {
-        QMessageBox::critical(this,"Error", query.lastError().text());
-        return;
+    if(CommandeManager::deleteCommande(id)) {
+        modelCommandes->select();
+    } else {
+        QMessageBox::critical(this,"Error","Impossible de supprimer la commande !");
     }
-    modelCommandes->select();
 }
 
 void MainWindow::searchCommande() {
