@@ -48,7 +48,9 @@ MainWindow::MainWindow(QWidget *parent)
         return;
     }
 
+
     setupUI();
+    applyStyling();
     loadClients();
     loadCommandes();
     loadClientComboBox();
@@ -169,6 +171,65 @@ void MainWindow::setupUI()
     vLayoutCommandes->addLayout(hLayoutButtonsCommandes);
 
     tabWidget->addTab(tabCommandes, "Commandes");
+}
+void MainWindow::applyStyling() {
+    // ---------------- Tabs ----------------
+    tabWidget->setStyleSheet(
+        "QTabWidget::pane { border: 1px solid #444; }"
+        "QTabBar::tab { background: #5B2C6F; color: white; padding: 8px; border-radius: 4px; }"
+        "QTabBar::tab:selected { background: #8E44AD; }"
+        "QTabBar::tab:hover { background: #7D3C98; }"
+        );
+
+    // ---------------- Buttons ----------------
+    QString buttonStyle =
+        "QPushButton {"
+        "background-color: #2980B9; color: white; border-radius: 5px; padding: 5px 15px;}"
+        "QPushButton:hover { background-color: #3498DB; }"
+        "QPushButton:pressed { background-color: #1F618D; }";
+
+    pushButtonAddClient->setStyleSheet(buttonStyle);
+    pushButtonUpdateClient->setStyleSheet(buttonStyle);
+    pushButtonDeleteClient->setStyleSheet(buttonStyle);
+    pushButtonSearchClient->setStyleSheet(buttonStyle);
+    pushButtonExportClientsPdf->setStyleSheet(buttonStyle);
+
+    pushButtonAddCommande->setStyleSheet(buttonStyle);
+    pushButtonUpdateCommande->setStyleSheet(buttonStyle);
+    pushButtonDeleteCommande->setStyleSheet(buttonStyle);
+    pushButtonSearchCommande->setStyleSheet(buttonStyle);
+    pushButtonExportCommandesPdf->setStyleSheet(buttonStyle);
+
+    // ---------------- LineEdits & ComboBoxes ----------------
+    QString inputStyle =
+        "QLineEdit, QComboBox, QDateEdit {"
+        "border: 1px solid #34495E; border-radius: 4px; padding: 4px;"
+        "selection-background-color: #2980B9; background-color: #FDFEFE; }"
+        "QLineEdit:focus, QComboBox:focus, QDateEdit:focus { border: 2px solid #5B2C6F; }";
+
+    lineEditNom->setStyleSheet(inputStyle);
+    lineEditPrenom->setStyleSheet(inputStyle);
+    lineEditAdresse->setStyleSheet(inputStyle);
+    lineEditTelephone->setStyleSheet(inputStyle);
+    lineEditEmail->setStyleSheet(inputStyle);
+
+    lineEditDescription->setStyleSheet(inputStyle);
+    lineEditMontant->setStyleSheet(inputStyle);
+    comboBoxClient->setStyleSheet(inputStyle);
+    comboBoxStatut->setStyleSheet(inputStyle);
+    dateEditCommande->setStyleSheet(inputStyle);
+
+    // ---------------- TableViews ----------------
+    QString tableStyle =
+        "QTableView {"
+        "gridline-color: #BDC3C7; background-color: #EAECEE; alternate-background-color: #F7F9F9;"
+        "selection-background-color: #3498DB; selection-color: white;"
+        "border: 1px solid #34495E;"
+        "}"
+        "QHeaderView::section { background-color: #5B2C6F; color: white; padding: 4px; }";
+
+    tableViewClients->setStyleSheet(tableStyle);
+    tableViewCommandes->setStyleSheet(tableStyle);
 }
 
 // =========================

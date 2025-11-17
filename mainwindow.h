@@ -68,6 +68,7 @@ private:
 
     // Setup functions
     void setupUI();
+    void applyStyling();
     void loadClients();
     void loadCommandes();
     void loadClientComboBox();
